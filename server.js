@@ -22,6 +22,7 @@ app.use(cors());
 app.get('/location', locationHandler);
 app.get('/weather', weatherHandler);
 app.get('/events', eventsHandler);
+app.get('/movies', movieHandler);
 
 // Constructors
 
@@ -42,6 +43,15 @@ function Event (event) {
   this.name = event.title;
   this.event_date = new Date(event.start_time).toDateString();
   this.summary = event.description;
+}
+
+function Movies (movieName) {
+  this.title = movieName.title;
+  this.overview = movieName.overview;
+  this.average_votes = movieName.average_votes;
+  this.image_url = movieName.poster_path;
+  this.popularity = movieName.popularity;
+  this.released_on = movie.Name.release_date;
 }
 
 // Endpoint callback functions
@@ -135,6 +145,21 @@ function eventsHandler(request, response) {
       });
   }
   catch(error) {
+    errorHandler(error, request, response);
+  }
+}
+
+function movieHandler (request, response) {
+  let city = request.query.city;
+  let url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&language=en-US&query=${city}&page=1&include_adult=false`;
+  superagent.get(url);
+  .then(data => {
+    let movieArr = data.body.result.map(obj => {
+      return new Movies(obj.result);
+    });
+    response.send(movieArr);
+  })
+  catch (error) {
     errorHandler(error, request, response);
   }
 }
